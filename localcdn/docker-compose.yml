@@ -1,0 +1,34 @@
+# Using Docker Compose for Orchestration
+version: "3.9"
+
+services:
+  origin:
+    build:
+      context: ./origin
+    container_name: origin
+    networks:
+      - localcdn-net
+    ports:
+      - "8080:80"
+
+  edge1:
+    build:
+      context: ./edge
+    container_name: edge1
+    networks:
+      - localcdn-net
+    ports:
+      - "8081:80"
+
+  edge2:
+    build:
+      context: ./edge
+    container_name: edge2
+    networks:
+      - localcdn-net
+    ports:
+      - "8082:80"
+
+networks:
+  localcdn-net:
+    driver: bridge

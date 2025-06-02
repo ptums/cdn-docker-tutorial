@@ -1,0 +1,25 @@
+# macOS
+.DS_Store
+
+# Docker
+docker-compose.override.yml
+**/.env
+
+# Logs and runtime files
+*.log
+*.tmp
+
+# IDE/editor folders
+.vscode/
+.idea/
+
+# Temporary files
+*~
+*.swp
+
+# Build artifacts (if any build scripts are added later)
+build/
+dist/
+
+# Nginx cache (just in case someone accidentally populates this locally)
+edge/nginx/cache/
