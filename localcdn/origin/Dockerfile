@@ -1,5 +1,5 @@
 # Use the official Nginx image (ARM64-compatible)
-FROM nginx:1.28.0-alpine-slim
+FROM nginx:stable-alpine-slim
 
 # Remove default content and copy our HTML
 RUN rm -rf /usr/share/nginx/html/*

@@ -23,3 +23,5 @@ dist/
 
 # Nginx cache (just in case someone accidentally populates this locally)
 edge/nginx/cache/
+
+localcdn/edge/certs/*
