@@ -1,6 +1,6 @@
 ```
 # Build the edge image
-docker build -t localcdn-edge .
+docker build -t localcdn-origin .
 
 # Run the edge, attach to same network. Name it "edge"
 docker run -d \
