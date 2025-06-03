@@ -11,6 +11,11 @@ EDGE_IMAGE="localcdn-edge"
 ORIGIN_NAME="origin"
 EDGE_NAME_1="edge-us.local"
 EDGE_NAME_2="edge-eu.local"
+LB_IMAGE="localcdn-lb"
+LB_NAME="lb"
+
+
+
 
 echo "=== Stopping and removing containers on network '$NETWORK' ==="
 containers=$(docker ps -a --filter "network=$NETWORK" --format "{{.Names}}")
@@ -64,8 +69,18 @@ docker run -d \
   -v "$(pwd)/edge/certs":/etc/nginx/certs:ro \
   "$EDGE_IMAGE"
 
+
+echo
+echo "=== Starting load balancer container ==="
+docker run -d \
+  --name "$LB_NAME" \
+  --network "$NETWORK" \
+  -p 8090:80 \
+  "$LB_IMAGE"
+
 echo
 echo "Local CDN environment setup complete."
 echo " - Origin:  http://localhost:8080"
 echo " - Edge US: http://localhost:8081 or http://edge‑us.local:8081 (HTTPS: https://edge‑us.local:8443)"
 echo " - Edge EU: http://localhost:8082 or http://edge‑eu.local:8082 (HTTPS: https://edge‑eu.local:8444)"
+echo " - Load Balancer: http://localhost:8090"
