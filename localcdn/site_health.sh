@@ -8,10 +8,17 @@
 # Load Balancer: http://localhost:8090"
 set -e
 
-  echo "Load balancer "
-  curl -s -I http://lb.local:8090/ 
-  echo "Edge Us (http): "
-  curl -s -I http://edge-us.local:8081/ 
-  echo "API "
-  curl -I http://lb.local:8090/
-
+# === Testing endpoints ===
+echo "=== Testing endpoints ==="
+echo "Origin:"
+curl -s -I http://localhost:8080
+echo "Load balancer (root):"
+curl -s -I http://localhost:8090
+echo "Edge US (HTTP):"
+curl -s -I http://edge-us.local:8081
+echo "Edge EU (HTTP):"
+curl -s -I http://edge-eu.local:8082
+echo "API (direct):"
+curl -s -I http://localhost:4000/api/users
+echo "API (via LB):"
+curl -s -I http://localhost:8090/api/users
