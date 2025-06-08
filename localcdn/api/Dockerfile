@@ -1,49 +1,37 @@
-# 1) Builder stage — compile TS & generate Prisma client
+# ─── 1) Builder stage: install deps, generate Prisma client, compile TS ───
 FROM node:18-alpine AS builder
-WORKDIR /usr/src/app
+WORKDIR /app
 
-COPY package*.json tsconfig.json ./
-COPY prisma ./prisma
-COPY src ./src
-
-RUN npm install \
- && npx prisma generate \
- && npm run build
-
-
-# 2) Production stage — Node + embedded MariaDB
-FROM node:18-alpine
-WORKDIR /usr/src/app
-
-# ─── Install MariaDB server/client + su-exec ───────────────────
-RUN apk add --no-cache \
-      mariadb \
-      mariadb-client \
-      su-exec \
-    # ─── Ensure both data dir and socket dir exist & are owned ─────────────
-    && mkdir -p /var/lib/mysql /run/mysqld \
-    && chown -R mysql:mysql /var/lib/mysql /run/mysqld
-
-# initialize the data directory (empty on first build)
-RUN mysql_install_db --user=mysql --datadir=/var/lib/mysql
-
-# copy optional seed SQL
-COPY prisma/seed.sql /docker-entrypoint-initdb.d/seed.sql:ro
-
-# copy in your built API
+# Copy package definitions and install all deps (including dev)
 COPY package*.json ./
-COPY --from=builder /usr/src/app/node_modules ./node_modules
-COPY --from=builder /usr/src/app/dist ./dist
+RUN npm ci
 
-# copy & make executable our entrypoint
-COPY entrypoint.sh /usr/local/bin/entrypoint.sh
-RUN chmod +x /usr/local/bin/entrypoint.sh
+# Copy Prisma schema + generate client
+COPY prisma ./prisma
+RUN npx prisma generate
 
-ENV NODE_ENV=production \
-    MYSQL_ROOT_PASSWORD=example \
-    MYSQL_DATABASE=scorecardnotes
+# Copy source, build TS → dist
+COPY tsconfig.json ./
+COPY src ./src
+RUN npm run build
 
-# expose API port + MySQL port
-EXPOSE 4000 3306
+# ─── 2) Production stage: lean runtime ──────────────────────────────────
+FROM node:18-alpine
+WORKDIR /app
 
-ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+# Only production deps
+COPY package*.json ./
+RUN npm ci --omit=dev
+
+# Bring in built assets + Prisma client
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/prisma ./prisma
+COPY .env .env
+
+# Expose your API port
+ENV NODE_ENV=production
+EXPOSE 4000
+
+# Use env-file or -e flags to pass DATABASE_URL, REDIS_URL, etc.
+CMD ["node", "dist/index.js"]

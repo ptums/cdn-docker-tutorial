@@ -7,17 +7,11 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id      Int    @id @default(autoincrement())
-  account String
-  games   Game[]
-}
-
 model Course {
   id     Int    @id @default(autoincrement())
   name   String
   rounds Int
-  games  Game[]
+  Game   Game[]
 }
 
 model Game {
@@ -27,9 +21,9 @@ model Game {
   userId     Int
   finalNote  String?
   finalScore Int
-  course     Course   @relation(fields: [courseId], references: [id])
-  user       User     @relation(fields: [userId], references: [id])
-  scores     Score[]
+  Course     Course   @relation(fields: [courseId], references: [id])
+  User       User     @relation(fields: [userId], references: [id])
+  Score      Score[]
 
   @@index([courseId], map: "Game_courseId_fkey")
   @@index([userId], map: "Game_userId_fkey")
@@ -42,7 +36,13 @@ model Score {
   par    String
   score  String
   rating Int
-  game   Game   @relation(fields: [gameId], references: [id])
+  Game   Game   @relation(fields: [gameId], references: [id])
 
   @@unique([gameId, hole])
+}
+
+model User {
+  id      Int    @id @default(autoincrement())
+  account String
+  Game    Game[]
 }

@@ -1,31 +1,36 @@
 import express, { Request, Response, Router, RequestHandler } from "express";
-import { PrismaClient } from "@prisma/client";
-import Redis from "redis";
 import dotenv from "dotenv";
+
+import { createClient } from "redis";
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
+
 dotenv.config();
 
-const redis = Redis.createClient({ url: process.env.REDIS_URL });
+const client = createClient({
+  url: process.env.REDIS_URL,
+});
 
 async function startServer() {
   const app = express();
   const router: Router = express.Router();
-  const prisma = new PrismaClient();
   app.use(express.json());
 
-  await redis.connect();
+  await client.connect();
 
   // --- USER CRUD ---
   const getUsers: RequestHandler = async (req, res) => {
     // look for results in memory/redis cache
     const cacheKey = "users:all";
-    const cached = await redis.get(cacheKey);
+    const cached = await client.get(cacheKey);
     if (cached) {
       res.set("X-Cache", "HIT").json(JSON.parse(cached));
       return;
     }
 
-    const users = await prisma.user.findMany({ include: { games: false } });
-    await redis.setEx(cacheKey, 300, JSON.stringify(users));
+    const users = await prisma.user.findMany({});
+    await client.setEx(cacheKey, 300, JSON.stringify(users));
     res.set("X-Cache", "MISS").json(users);
   };
 
@@ -33,14 +38,14 @@ async function startServer() {
     // look for results in memory/redis cache
     const id = Number(req.params.id);
     const cacheKey = `users:${id}`;
-    const cached = await redis.get(cacheKey);
+    const cached = await client.get(cacheKey);
     if (cached) {
       res.set("X-Cache", "HIT").json(JSON.parse(cached));
       return;
     }
 
     const user = await prisma.user.findUnique({ where: { id } });
-    await redis.setEx(cacheKey, 300, JSON.stringify(user));
+    await client.setEx(cacheKey, 300, JSON.stringify(user));
     res.set("X-Cache", "MISS").json(user);
   };
 
