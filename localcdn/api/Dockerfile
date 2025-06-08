@@ -27,11 +27,22 @@ RUN npm ci --omit=dev
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/prisma ./prisma
+
+# Copy your .env if you still want defaults in the image
 COPY .env .env
 
+# Allow build-time overrides, defaulting to whatever’s in .env
+ARG DATABASE_URL
+ARG REDIS_URL
+
+# Set runtime environment variables
+# 2) Set them as env vars at runtime (or fall back to whatever your .env provides)
+ENV NODE_ENV=production \
+    DATABASE_URL=${DATABASE_URL} \
+    REDIS_URL=${REDIS_URL}
+
 # Expose your API port
-ENV NODE_ENV=production
 EXPOSE 4000
 
-# Use env-file or -e flags to pass DATABASE_URL, REDIS_URL, etc.
+# Launch your app
 CMD ["node", "dist/index.js"]

@@ -78,14 +78,6 @@ docker run -d \
   -v "$(pwd)/edge/certs":/etc/nginx/certs:ro \
   "$EDGE_IMAGE"
 
-echo
-echo "Starting load balancer..."
-docker run -d \
-  --name "$LB_NAME" \
-  --network "$NETWORK" \
-  -p 8090:80 \
-  "$LB_IMAGE"
-
 # ─── Start API ───────────────────────────────────────────────
 echo
 echo "Starting API container '$API_NAME' on host port $API_HOST_PORT..."
@@ -97,6 +89,15 @@ docker run -d \
   -e NODE_ENV="production" \
   -p "${API_HOST_PORT}:${API_CONTAINER_PORT}" \
   "$API_IMAGE"
+
+# ─── Start Load balancer ───────────────────────────────────────────────
+  echo
+echo "Starting load balancer..."
+docker run -d \
+  --name "$LB_NAME" \
+  --network "$NETWORK" \
+  -p 8090:80 \
+  "$LB_IMAGE"
 
 # ─── Test Endpoints ──────────────────────────────────────────
 echo
