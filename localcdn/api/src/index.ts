@@ -1,5 +1,6 @@
 import express, { Request, Response, Router, RequestHandler } from "express";
 import dotenv from "dotenv";
+import cors from "cors";
 
 import { createClient } from "redis";
 import { PrismaClient } from "@prisma/client";
@@ -15,6 +16,20 @@ const client = createClient({
 async function startServer() {
   const app = express();
   const router: Router = express.Router();
+
+  // Configure CORS
+  app.use(
+    cors({
+      origin: [
+        "http://localhost:3000",
+        "http://localhost:8080",
+        "http://localhost:8090",
+      ],
+      methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+      allowedHeaders: ["Content-Type", "Authorization"],
+    })
+  );
+
   app.use(express.json());
 
   await client.connect();
