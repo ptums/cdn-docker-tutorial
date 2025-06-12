@@ -1,0 +1,48 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Course {
+  id     Int    @id @default(autoincrement())
+  name   String
+  rounds Int
+  Game   Game[]
+}
+
+model Game {
+  id         Int      @id @default(autoincrement())
+  date       DateTime
+  courseId   Int
+  userId     Int
+  finalNote  String?
+  finalScore Int
+  Course     Course   @relation(fields: [courseId], references: [id])
+  User       User     @relation(fields: [userId], references: [id])
+  Score      Score[]
+
+  @@index([courseId], map: "Game_courseId_fkey")
+  @@index([userId], map: "Game_userId_fkey")
+}
+
+model Score {
+  id     Int    @id @default(autoincrement())
+  gameId Int
+  hole   Int
+  par    String
+  score  String
+  rating Int
+  Game   Game   @relation(fields: [gameId], references: [id])
+
+  @@unique([gameId, hole])
+}
+
+model User {
+  id      Int    @id @default(autoincrement())
+  account String
+  Game    Game[]
+}

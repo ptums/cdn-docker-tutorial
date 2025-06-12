@@ -1,0 +1,119 @@
+# /etc/nginx/nginx.conf.template
+
+events { }
+
+http {
+    # ── Cache storage settings ───────────────────────────────────────────────
+    proxy_cache_path /var/cache/nginx
+                     levels=1:2
+                     keys_zone=cdn_cache:10m
+                     max_size=100m
+                     inactive=10m
+                     use_temp_path=off;
+
+    # ─── whitelist allowed origins ─────────────────────────────────────────
+    map $http_origin $cors_origin {
+        default "";
+        # exact origins
+        "http://localhost:8080"      $http_origin;
+        "http://localhost:8090"      $http_origin;
+        "http://edge-site-us.local:8081"  $http_origin;
+        "http://edge-site-eu.local:8082"  $http_origin;
+        "https://edge-site-us.local:8443"  $http_origin;
+        "https://edge-site-eu.local:8444"  $http_origin;
+        "http://localhost:3000"      $http_origin;
+    }
+
+    # ── How to build the cache key ───────────────────────────────────────────
+    proxy_cache_key "$scheme$request_method$host$request_uri";
+
+    # ── HTTP Server Block ────────────────────────────────────────────────────
+    server {
+        listen 80;
+        server_name ${EDGE_HOSTNAME};
+
+        add_header X-Cache-Status $upstream_cache_status;
+
+        location / {
+            # hide any CORS headers from upstream
+            proxy_hide_header Access-Control-Allow-Origin;
+            proxy_hide_header Access-Control-Allow-Methods;
+            proxy_hide_header Access-Control-Allow-Headers;
+
+            # handle preflight
+            if ($request_method = OPTIONS) {
+                add_header 'Access-Control-Allow-Origin'  $http_origin  always;
+                add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS' always;
+                add_header 'Access-Control-Allow-Headers' 'Authorization,Content-Type' always;
+                add_header 'Access-Control-Max-Age'       1728000           always;
+                return 204;
+            }
+
+            proxy_pass http://site_origin:80;
+
+            proxy_cache cdn_cache;
+            proxy_cache_valid 200 302 10m;
+            proxy_cache_valid 404 1m;
+            proxy_cache_use_stale error timeout updating http_500 http_502 http_503 http_504;
+
+
+
+            # reflect the origin header back for real requests
+            add_header 'Access-Control-Allow-Origin'  $http_origin  always;
+            add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS' always;
+            add_header 'Access-Control-Allow-Headers' 'Authorization,Content-Type' always;
+
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        }
+    }
+
+    # ── HTTPS Server Block ───────────────────────────────────────────────────
+    server {
+        listen 443 ssl;
+        server_name ${EDGE_HOSTNAME};
+
+        ssl_certificate     /etc/nginx/certs/server.crt;
+        ssl_certificate_key /etc/nginx/certs/server.key;
+
+        ssl_session_cache   shared:SSL:10m;
+        ssl_session_timeout 10m;
+
+        add_header Strict-Transport-Security "max-age=31536000" always;
+        add_header X-Cache-Status $upstream_cache_status;
+
+        location / {
+            # hide any CORS headers from upstream
+            proxy_hide_header Access-Control-Allow-Origin;
+            proxy_hide_header Access-Control-Allow-Methods;
+            proxy_hide_header Access-Control-Allow-Headers;
+
+            # handle preflight
+            if ($request_method = OPTIONS) {
+                add_header 'Access-Control-Allow-Origin'  $http_origin  always;
+                add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS' always;
+                add_header 'Access-Control-Allow-Headers' 'Authorization,Content-Type' always;
+                add_header 'Access-Control-Max-Age'       1728000           always;
+                return 204;
+            }
+
+            proxy_pass http://site_origin:80;
+
+            proxy_cache cdn_cache;
+            proxy_cache_valid 200 302 10m;
+            proxy_cache_valid 404 1m;
+            proxy_cache_use_stale error timeout updating http_500 http_502 http_503 http_504;
+
+
+            # reflect the origin header back for real requests
+            add_header 'Access-Control-Allow-Origin'  $http_origin  always;
+            add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS' always;
+            add_header 'Access-Control-Allow-Headers' 'Authorization,Content-Type' always;
+
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        }
+    }
+}
