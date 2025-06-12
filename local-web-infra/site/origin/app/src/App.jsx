@@ -42,6 +42,11 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <div className="app">
+        <img
+          src="http://localhost:8085/images/golfball.png"
+          alt="golf ball"
+          width={500}
+        />
         <h1>User Management</h1>
         <UsersList />
       </div>
