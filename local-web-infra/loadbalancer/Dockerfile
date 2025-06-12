@@ -1,4 +1,4 @@
-# ~/localcdn/loadbalancer/Dockerfile
+# ~/localwebinfa/loadbalancer/Dockerfile
 
 # Use a small Nginx base (ARM‑compatible)
 FROM nginx:1.28.0-alpine-slim

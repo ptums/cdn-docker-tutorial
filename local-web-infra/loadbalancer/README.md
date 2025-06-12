@@ -1,7 +1,7 @@
 # Load balancer
 
 ```
-docker build -t localcdn-lb .
+docker build -t localwebinfa-lb .
 ```
 
 ```

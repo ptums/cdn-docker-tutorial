@@ -1,4 +1,4 @@
-# LocalCDN Tutorial
+# localwebinfa Tutorial
 
 A step-by-step guide to building a local CDN simulation using Docker and Nginx on macOS (Apple Silicon).  
 You’ll spin up:

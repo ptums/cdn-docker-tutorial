@@ -17,10 +17,10 @@ http {
         # exact origins
         "http://localhost:8080"      $http_origin;
         "http://localhost:8090"      $http_origin;
-        "http://edge-us.local:8081"  $http_origin;
-        "http://edge-eu.local:8082"  $http_origin;
-        "https://edge-us.local:8443"  $http_origin;
-        "https://edge-eu.local:8444"  $http_origin;
+        "http://edge-site-us.local:8081"  $http_origin;
+        "http://edge-site-eu.local:8082"  $http_origin;
+        "https://edge-site-us.local:8443"  $http_origin;
+        "https://edge-site-eu.local:8444"  $http_origin;
         "http://localhost:3000"      $http_origin;
     }
 

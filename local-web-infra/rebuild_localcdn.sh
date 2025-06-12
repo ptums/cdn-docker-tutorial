@@ -1,22 +1,22 @@
 #!/usr/bin/env bash
-# rebuild_localcdn.sh
-# Tears down old containers on localcdn-net (and any publishing the API port),
+# rebuild_localwebinfa.sh
+# Tears down old containers on localwebinfa-net (and any publishing the API port),
 # recreates the network, then starts origin, edges, LB, and the API,
 # mapping your host's DATABASE_URL and REDIS_URL into the API container.
 
 set -e
 
 # ─── Configuration ───────────────────────────────────────
-NETWORK="localcdn-net"
+NETWORK="localwebinfa-net"
 
-ORIGIN_IMAGE="localcdn-origin"
-EDGE_IMAGE="localcdn-edge"
-LB_IMAGE="localcdn-lb"
-API_IMAGE="localcdn-api"
+ORIGIN_IMAGE="localwebinfa-origin"
+EDGE_IMAGE="localwebinfa-edge"
+LB_IMAGE="localwebinfa-lb"
+API_IMAGE="localwebinfa-api"
 
 ORIGIN_NAME="origin"
-EDGE_NAME_1="edge-us.local"
-EDGE_NAME_2="edge-eu.local"
+EDGE_SITE_NAME_1="edge-site-us.local"
+EDGE_SITE_NAME_2="edge-site-eu.local"
 LB_NAME="lb"
 API_NAME="api"
 
@@ -57,25 +57,25 @@ docker run -d \
   "$ORIGIN_IMAGE"
 
 echo
-echo "Starting edge-US..."
+echo "Starting edge-site-us..."
 docker run -d \
-  --name "$EDGE_NAME_1" \
+  --name "$EDGE_SITE_NAME_1" \
   --network "$NETWORK" \
   -p 8081:80 \
   -p 8443:443 \
-  -e EDGE_HOSTNAME="$EDGE_NAME_1" \
-  -v "$(pwd)/edge/certs":/etc/nginx/certs:ro \
+  -e EDGE_HOSTNAME="$EDGE_SITE_NAME_1" \
+  -v "$(pwd)/site/edge/certs":/etc/nginx/certs:ro \
   "$EDGE_IMAGE"
 
 echo
-echo "Starting edge-EU..."
+echo "Starting edge-site-eu..."
 docker run -d \
-  --name "$EDGE_NAME_2" \
+  --name "$EDGE_SITE_NAME_2" \
   --network "$NETWORK" \
   -p 8082:80 \
   -p 8444:443 \
-  -e EDGE_HOSTNAME="$EDGE_NAME_2" \
-  -v "$(pwd)/edge/certs":/etc/nginx/certs:ro \
+  -e EDGE_HOSTNAME="$EDGE_SITE_NAME_2" \
+  -v "$(pwd)/site/edge/certs":/etc/nginx/certs:ro \
   "$EDGE_IMAGE"
 
 # ─── Start API ───────────────────────────────────────────────
@@ -112,11 +112,11 @@ curl -s -I http://localhost:8090 || true
 echo
 
 echo "Edge US (HTTP, 8081):"
-curl -s -I http://edge-us.local:8081/ || true
+curl -s -I http://edge-site-us.local:8081/ || true
 echo
 
 echo "Edge EU (HTTP, 8082):"
-curl -s -I http://edge-eu.local:8082/ || true
+curl -s -I http://edge-site-eu.local:8082/ || true
 echo
 
 echo "API (direct, $API_HOST_PORT):"

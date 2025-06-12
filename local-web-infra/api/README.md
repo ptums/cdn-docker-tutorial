@@ -1,4 +1,4 @@
-docker build -t localcdn-api .
+docker build -t localwebinfa-api .
 docker logs --tail 50 api
 
 export DATABASE_URL="mysql://root@host.docker.internal:3306/scorecardnotes"

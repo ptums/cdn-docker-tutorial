@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
-# rebuild_localcdn.sh
-# Tears down old containers on localcdn-net (and any publishing the API port),
+# rebuild_localwebinfa.sh
+# Tears down old containers on localwebinfa-net (and any publishing the API port),
 # recreates the network, then starts origin, edges, LB, and the API,
 # mapping your host's DATABASE_URL and REDIS_URL into the API container.
 
 set -e
 
 # ─── Configuration ───────────────────────────────────────
-NETWORK="localcdn-net"
-API_IMAGE="localcdn-api"
+NETWORK="localwebinfa-net"
+API_IMAGE="localwebinfa-api"
 API_NAME="api"
 
 API_HOST_PORT="${API_HOST_PORT:-4000}"

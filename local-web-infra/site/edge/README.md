@@ -2,27 +2,27 @@
 
 ```
 # Build the edge image
-docker build -t localcdn-edge .
+docker build -t localwebinfa-edge .
 
 # Run the edge, attach to same network. Name it "edge"
 docker run -d \
   --name edge \
-  --network localcdn-net \
+  --network localwebinfa-net \
   -p 8081:80 \
-  localcdn-edge
+  localwebinfa-edge
 ```
 
 ```
 Build a second one to mimic Multiple Edge Nodes servers
-# From ~/localcdn/edge/ (where Dockerfile + nginx.conf live)
-docker build -t localcdn-edge .
+# From ~/localwebinfa/edge/ (where Dockerfile + nginx.conf live)
+docker build -t localwebinfa-edge .
 
 # Run a second edge, call it edge2, listening on port 8082
 docker run -d \
   --name edge2 \
-  --network localcdn-net \
+  --network localwebinfa-net \
   -p 8082:80 \
-  localcdn-edge
+  localwebinfa-edge
 ```
 
 ```

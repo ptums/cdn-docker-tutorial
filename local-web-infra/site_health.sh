@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# rebuild_localcdn.sh
-# This script stops and removes any containers on the "localcdn-net" network,
+# rebuild_localwebinfa.sh
+# This script stops and removes any containers on the "localwebinfa-net" network,
 # removes and recreates the network, then restarts the origin and two edge containers.
 
 # Edge US: http://localhost:8081 or http://edge‑us.local:8081 (HTTPS: https://edge‑us.local:8443)"
@@ -15,9 +15,9 @@ curl -s -I http://localhost:8080
 echo "Load balancer (root):"
 curl -s -I http://localhost:8090
 echo "Edge US (HTTP):"
-curl -s -I http://edge-us.local:8081
+curl -s -I http://edge-site-us.local:8081
 echo "Edge EU (HTTP):"
-curl -s -I http://edge-eu.local:8082
+curl -s -I http://edge-site-eu.local:8082
 echo "API (direct):"
 curl -s -I http://localhost:4000/api/users
 echo "API (via LB):"
