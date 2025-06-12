@@ -16,11 +16,16 @@ http {
         default "";
         # exact origins
         "http://localhost:8080"      $http_origin;
+        "http://localhost:8085"      $http_origin;
         "http://localhost:8090"      $http_origin;
         "http://edge-site-us.local:8081"  $http_origin;
         "http://edge-site-eu.local:8082"  $http_origin;
         "https://edge-site-us.local:8443"  $http_origin;
         "https://edge-site-eu.local:8444"  $http_origin;
+        "http://edge-cdn-us.local:8085"  $http_origin;
+        "http://edge-cdn-eu.local:8086"  $http_origin;
+        "https://edge-cdn-us.local:8445"  $http_origin;
+        "https://edge-cdn-eu.local:8446"  $http_origin;
         "http://localhost:3000"      $http_origin;
     }
 
@@ -34,7 +39,8 @@ http {
 
         add_header X-Cache-Status $upstream_cache_status;
 
-        location / {
+        # ── Media file locations (images and videos only) ────────────────────
+        location ~* \.(jpg|jpeg|png|webp|gif|mp4)$ {
             # hide any CORS headers from upstream
             proxy_hide_header Access-Control-Allow-Origin;
             proxy_hide_header Access-Control-Allow-Methods;
@@ -49,14 +55,12 @@ http {
                 return 204;
             }
 
-            proxy_pass http://site_origin:80;
+            proxy_pass http://cdn_origin:80;
 
             proxy_cache cdn_cache;
             proxy_cache_valid 200 302 10m;
             proxy_cache_valid 404 1m;
             proxy_cache_use_stale error timeout updating http_500 http_502 http_503 http_504;
-
-
 
             # reflect the origin header back for real requests
             add_header 'Access-Control-Allow-Origin'  $http_origin  always;
@@ -66,6 +70,11 @@ http {
             proxy_set_header Host $host;
             proxy_set_header X-Real-IP $remote_addr;
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        }
+
+        # ── Block all other requests ──────────────────────────────────────────
+        location / {
+            return 404;
         }
     }
 
@@ -83,7 +92,8 @@ http {
         add_header Strict-Transport-Security "max-age=31536000" always;
         add_header X-Cache-Status $upstream_cache_status;
 
-        location / {
+        # ── Media file locations (images and videos only) ────────────────────
+        location ~* \.(jpg|jpeg|png|webp|gif|mp4)$ {
             # hide any CORS headers from upstream
             proxy_hide_header Access-Control-Allow-Origin;
             proxy_hide_header Access-Control-Allow-Methods;
@@ -98,13 +108,12 @@ http {
                 return 204;
             }
 
-            proxy_pass http://site_origin:80;
+            proxy_pass http://cdn_origin:80;
 
             proxy_cache cdn_cache;
             proxy_cache_valid 200 302 10m;
             proxy_cache_valid 404 1m;
             proxy_cache_use_stale error timeout updating http_500 http_502 http_503 http_504;
-
 
             # reflect the origin header back for real requests
             add_header 'Access-Control-Allow-Origin'  $http_origin  always;
@@ -114,6 +123,11 @@ http {
             proxy_set_header Host $host;
             proxy_set_header X-Real-IP $remote_addr;
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        }
+
+        # ── Block all other requests ──────────────────────────────────────────
+        location / {
+            return 404;
         }
     }
 }
